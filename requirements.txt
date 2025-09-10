@@ -1,3 +1,4 @@
-flask
-requests
-mysql-connector-python
+Flask==2.3.2
+Flask-SQLAlchemy==3.1.1
+networkx==3.2.1
+osmnx==1.9.3

@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, jsonify, render_template
-import mysql.connector
+
 
 app = Flask(__name__)
 
