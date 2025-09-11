@@ -1,42 +1,60 @@
+// Initialize map
 let map = L.map("map").setView([14.5995, 120.9842], 12);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19
+  maxZoom: 19
 }).addTo(map);
 
-let markers = {};
+let routeControl = null;
 
+// send ambulance’s location to server every 5 s
 function updateLocations() {
-    fetch("/get_locations")
-        .then(res => res.json())
-        .then(data => {
-            // Send ambulance’s current location
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    fetch("/location_update", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            lat: pos.coords.latitude,
-                            lon: pos.coords.longitude
-                        })
-                    });
-                });
-            }
-
-            // Update client markers on map
-            Object.entries(data.clients).forEach(([id, loc]) => {
-                if (markers[id]) {
-                    markers[id].setLatLng([loc.lat, loc.lon]);
-                } else {
-                    markers[id] = L.marker([loc.lat, loc.lon], {
-                        icon: L.divIcon({ className: "client-marker" })
-                    }).addTo(map);
-                }
-            });
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetch("/location_update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude
         })
-        .catch(err => console.error("Error updating locations:", err));
+      });
+    });
+  }
 }
 
-// Refresh every 5 seconds
 setInterval(updateLocations, 5000);
+
+// handle route button clicks
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("route-btn")) {
+    const clientLat = parseFloat(e.target.dataset.lat);
+    const clientLon = parseFloat(e.target.dataset.lon);
+
+    // get ambulance current position
+    navigator.geolocation.getCurrentPosition(pos => {
+      const ambLat = pos.coords.latitude;
+      const ambLon = pos.coords.longitude;
+
+      // clear previous route if any
+      if (routeControl) {
+        map.removeControl(routeControl);
+      }
+
+      // draw route
+      routeControl = L.Routing.control({
+        waypoints: [
+          L.latLng(ambLat, ambLon),
+          L.latLng(clientLat, clientLon)
+        ],
+        routeWhileDragging: false
+      }).addTo(map);
+
+      // zoom map to fit route
+      routeControl.on('routesfound', function (e) {
+        let bounds = L.latLngBounds([L.latLng(ambLat, ambLon), L.latLng(clientLat, clientLon)]);
+        map.fitBounds(bounds);
+      });
+    });
+  }
+});

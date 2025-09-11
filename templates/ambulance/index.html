@@ -1,33 +1,32 @@
 {% extends "layout.html" %}
+
 {% block content %}
-<head>
-    
-    <link rel="manifest" href="/ambulance/manifest.json">
-    
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("/ambulance/sw.js")
-                .then(() => console.log("Ambulance SW registered"))
-                .catch(err => console.error("SW registration failed", err));
-        }
-    </script>
-</head>
+<h2>Ambulance Dashboard</h2>
 
-<h2>📋 Patient Requests</h2>
+<div id="map"></div>
+
+<h3 style="margin-top:1rem;">Active Requests</h3>
 <ul>
-    {% for req in requests %}
+  {% for req in requests %}
     <li>
-        <strong>Address:</strong> {{ req.address }} <br>
-        <strong>Condition:</strong> {{ req.condition }} <br>
-        <em>Submitted: {{ req.timestamp }}</em>
+      <strong>{{ req.address }}</strong> — {{ req.condition }}
+      {% if req.lat and req.lon %}
+        <button class="route-btn" data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">
+          Show Route
+        </button>
+      {% else %}
+        <em>No coordinates</em>
+      {% endif %}
     </li>
-    <hr>
-    {% else %}
-    <p>No requests yet.</p>
-    {% endfor %}
+  {% else %}
+    <li>No active requests</li>
+  {% endfor %}
 </ul>
+{% endblock %}
 
-<div id="installContainer" class="hidden">
-    <button id="installBtn">Install App</button>
-</div>
+{% block scripts %}
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+<script src="{{ url_for('static', filename='ambulance/script.js') }}"></script>
 {% endblock %}

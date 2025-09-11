@@ -1,29 +1,38 @@
 {% extends "layout.html" %}
+
 {% block content %}
-<head>
-    <link rel="manifest" href="/client/manifest.json">
-    
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("/client/sw.js")
-                .then(() => console.log("Client SW registered"))
-                .catch(err => console.error("SW registration failed", err));
-        }
-    </script>
-</head>
+<h2>Request an Ambulance</h2>
 
-<h2>🚨 Request Ambulance</h2>
-<form method="POST">
-    <label for="address">Address:</label><br>
-    <input type="text" name="address" required><br><br>
+<!-- Map -->
+<div id="map"></div>
 
-    <label for="condition">Condition:</label><br>
-    <input type="text" name="condition" required><br><br>
+<!-- Emergency request form -->
+<form method="post" action="{{ url_for('client_request') }}" style="margin-top:1rem;">
+  <label for="address">Address:</label><br>
+  <input type="text" id="address" name="address" required><br><br>
 
-    <button type="submit" class="btn-emergency">Request Ambulance</button>
+  <label for="condition">Patient Condition:</label><br>
+  <textarea id="condition" name="condition" rows="3" required></textarea><br><br>
+
+  <!-- hidden lat/lon fields -->
+  <input type="hidden" name="lat" id="lat">
+  <input type="hidden" name="lon" id="lon">
+
+  <button type="submit">Submit Request</button>
 </form>
 
-<div id="installContainer" class="hidden">
-    <button id="installBtn">Install App</button>
-</div>
+<p id="status-message"></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // fill hidden fields with current location
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      document.getElementById('lat').value = pos.coords.latitude;
+      document.getElementById('lon').value = pos.coords.longitude;
+    });
+  }
+</script>
+<script src="{{ url_for('static', filename='client/script.js') }}"></script>
 {% endblock %}
