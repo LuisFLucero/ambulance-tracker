@@ -1,0 +1,85 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.landing-container {
+    max-width: 800px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.login-options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.btn-primary {
+    background: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: #c82333;
+}
+
+.btn-secondary {
+    background: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #0056b3;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Install button floating top-right */
+.install-button {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.install-button:hover {
+    background-color: #0056b3;
+}
+
+/* Install container bottom center */
+#installContainer {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+#installBtn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+#installBtn:hover {
+    background: #0056b3;
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Emergency Ambulance App",
+  "short_name": "AmbulanceApp",
+  "start_url": "/ambulance",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc3545",
+  "icons": [
+    {
+      "src": "icons/ambulance-192.png",
+      "sizes": "192x192",
+      "type": "aambuweewoo-192.png"
+    },
+    {
+      "src": "icons/ambulance-512.png",
+      "sizes": "512x512",
+      "type": "aambuweewoo-512png"
+    }
+  ]
+}

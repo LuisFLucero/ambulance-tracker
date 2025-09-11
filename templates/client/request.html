@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>🚑 Request an Ambulance</h2>
+
+<div id="map"></div>
+
+<div class="form-container">
+    <form method="POST" action="/client/request">
+        <label for="address">Address</label><br>
+        <input type="text" name="address" required><br><br>
+
+        <label for="condition">Condition</label><br>
+        <textarea name="condition" required></textarea><br><br>
+
+        <button type="submit" class="btn-primary">Submit Request</button>
+    </form>
+</div>
+
+<div class="emergency-panel">
+    <button id="emergency-btn" class="btn-emergency">🚨 Emergency</button>
+    <p id="status-message"></p>
+</div>
+
+<!-- Manifest + SW -->
+<link rel="manifest" href="{{ url_for('static', filename='client/manifest.json') }}">
+<meta name="theme-color" content="#007bff">
+
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("{{ url_for('static', filename='client/sw.js') }}")
+    .then(reg => console.log("Client Service Worker registered", reg))
+    .catch(err => console.error("SW registration failed:", err));
+}
+</script>
+{% endblock %}

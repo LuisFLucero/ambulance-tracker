@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+<head>
+    
+    <link rel="manifest" href="/ambulance/manifest.json">
+    
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/ambulance/sw.js")
+                .then(() => console.log("Ambulance SW registered"))
+                .catch(err => console.error("SW registration failed", err));
+        }
+    </script>
+</head>
+
+<h2>📋 Patient Requests</h2>
+<ul>
+    {% for req in requests %}
+    <li>
+        <strong>Address:</strong> {{ req.address }} <br>
+        <strong>Condition:</strong> {{ req.condition }} <br>
+        <em>Submitted: {{ req.timestamp }}</em>
+    </li>
+    <hr>
+    {% else %}
+    <p>No requests yet.</p>
+    {% endfor %}
+</ul>
+
+<div id="installContainer" class="hidden">
+    <button id="installBtn">Install App</button>
+</div>
+{% endblock %}

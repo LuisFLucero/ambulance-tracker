@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<head>
+    <link rel="manifest" href="/client/manifest.json">
+    
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/client/sw.js")
+                .then(() => console.log("Client SW registered"))
+                .catch(err => console.error("SW registration failed", err));
+        }
+    </script>
+</head>
+
+<h2>🚨 Request Ambulance</h2>
+<form method="POST">
+    <label for="address">Address:</label><br>
+    <input type="text" name="address" required><br><br>
+
+    <label for="condition">Condition:</label><br>
+    <input type="text" name="condition" required><br><br>
+
+    <button type="submit" class="btn-emergency">Request Ambulance</button>
+</form>
+
+<div id="installContainer" class="hidden">
+    <button id="installBtn">Install App</button>
+</div>
+{% endblock %}

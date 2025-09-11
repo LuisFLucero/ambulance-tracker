@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>✅ Request Submitted</h2>
+<p>Your ambulance request has been recorded. Please wait for assistance.</p>
+<a href="{{ url_for('patient_request') }}">Submit another request</a>
+{% endblock %}
