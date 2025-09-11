@@ -1,10 +1,11 @@
 {
   "name": "Emergency Client App",
   "short_name": "ClientApp",
-  "start_url": "/client/request",
+  "start_url": "/client",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/static/icons/client-192.png",

@@ -1,68 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <title>Ambulance Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='client/style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
 
-  <!-- Leaflet core CSS (for both client & ambulance) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-  <!-- Routing machine CSS (ambulance uses it but harmless globally) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
-
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    #map {
-      height: 80vh; /* adjust as you like */
-      width: 100%;
-    }
-  </style>
-
-  {% if 'client' in request.path %}
-    <link rel="manifest" href="{{ url_for('static', filename='client/manifest.json') }}">
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/client/sw.js');
-      }
-    </script>
-  {% elif 'ambulance' in request.path %}
+  {% if "ambulance" in request.path %}
     <link rel="manifest" href="{{ url_for('static', filename='ambulance/manifest.json') }}">
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/ambulance/sw.js');
-      }
-    </script>
+    <meta name="theme-color" content="#dc3545">
+  {% else %}
+    <link rel="manifest" href="{{ url_for('static', filename='client/manifest.json') }}">
+    <meta name="theme-color" content="#007bff">
   {% endif %}
 </head>
 <body>
-  <header>
-    <h1>🚑 Ambulance Tracker</h1>
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('logout') }}">Logout</a>
-    {% endif %}
-  </header>
-  <main>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li><strong>{{ category }}</strong>: {{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+<header>
+  <h1>🚑 Ambulance Tracker</h1>
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('logout') }}">Logout</a>
+  {% endif %}
+</header>
+<main>
+  {% block content %}{% endblock %}
+</main>
 
-    {% block content %}{% endblock %}
-  </main>
+<script>
+  if ("serviceWorker" in navigator) {
+    const sw = window.location.pathname.startsWith("/ambulance")
+      ? "/static/ambulance/sw.js"
+      : "/static/client/sw.js";
 
-  <!-- Leaflet JS included at bottom so it’s loaded for child scripts -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- Routing machine JS, only used if child script calls it -->
-  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-
-  {% block scripts %}{% endblock %}
+    navigator.serviceWorker.register(sw)
+      .then(reg => console.log("Service Worker registered:", reg))
+      .catch(err => console.error("SW registration failed:", err));
+  }
+</script>
 </body>
-</html>

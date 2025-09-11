@@ -1,60 +1,83 @@
-// Initialize map
-let map = L.map("map").setView([14.5995, 120.9842], 12);
+// Initialise map centred in Manila for now
+let currentAmbLat = 14.5995;
+let currentAmbLon = 120.9842;
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+const map = L.map('map').setView([currentAmbLat, currentAmbLon], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-let routeControl = null;
+// Marker for ambulance
+const ambulanceMarker = L.marker([currentAmbLat, currentAmbLon])
+  .addTo(map)
+  .bindPopup('Ambulance location')
+  .openPopup();
 
-// send ambulance’s location to server every 5 s
-function updateLocations() {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      fetch("/location_update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude
-        })
-      });
-    });
-  }
+let routingControl = null;      // to hold the route control
+let currentRouteTarget = null;  // store the current client lat/lon
+
+// Watch ambulance device GPS
+if ('geolocation' in navigator) {
+  navigator.geolocation.watchPosition(pos => {
+    currentAmbLat = pos.coords.latitude;
+    currentAmbLon = pos.coords.longitude;
+
+    // update marker position
+    ambulanceMarker.setLatLng([currentAmbLat, currentAmbLon]);
+
+    // if a route is currently displayed, re-draw with new ambulance position
+    if (currentRouteTarget) {
+      showRoute(currentRouteTarget.lat, currentRouteTarget.lon);
+    }
+
+    // (optional) send location to server if logged in as ambulance
+    fetch('/location_update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: currentAmbLat, lon: currentAmbLon })
+    }).catch(err => console.error('Location update failed', err));
+  },
+  err => console.error('GPS error', err),
+  { enableHighAccuracy: true });
 }
 
-setInterval(updateLocations, 5000);
-
-// handle route button clicks
-document.addEventListener("click", e => {
-  if (e.target.classList.contains("route-btn")) {
-    const clientLat = parseFloat(e.target.dataset.lat);
-    const clientLon = parseFloat(e.target.dataset.lon);
-
-    // get ambulance current position
-    navigator.geolocation.getCurrentPosition(pos => {
-      const ambLat = pos.coords.latitude;
-      const ambLon = pos.coords.longitude;
-
-      // clear previous route if any
-      if (routeControl) {
-        map.removeControl(routeControl);
-      }
-
-      // draw route
-      routeControl = L.Routing.control({
-        waypoints: [
-          L.latLng(ambLat, ambLon),
-          L.latLng(clientLat, clientLon)
-        ],
-        routeWhileDragging: false
-      }).addTo(map);
-
-      // zoom map to fit route
-      routeControl.on('routesfound', function (e) {
-        let bounds = L.latLngBounds([L.latLng(ambLat, ambLon), L.latLng(clientLat, clientLon)]);
-        map.fitBounds(bounds);
+// Fetch client requests list
+function fetchRequests() {
+  fetch('/api/requests')
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById('requests-list');
+      list.innerHTML = '';
+      data.forEach(req => {
+        const li = document.createElement('li');
+        li.textContent = `Address: ${req.address} | Condition: ${req.condition} `;
+        const btn = document.createElement('button');
+        btn.textContent = 'Show Route';
+        btn.addEventListener('click', () => {
+          showRoute(req.lat, req.lon);
+        });
+        li.appendChild(btn);
+        list.appendChild(li);
       });
     });
+}
+
+// Draw route from current ambulance location to client location
+function showRoute(lat, lon) {
+  currentRouteTarget = { lat, lon }; // remember the target
+
+  if (routingControl) {
+    map.removeControl(routingControl);
   }
-});
+  routingControl = L.Routing.control({
+    waypoints: [
+      L.latLng(currentAmbLat, currentAmbLon),
+      L.latLng(lat, lon)
+    ],
+    routeWhileDragging: false
+  }).addTo(map);
+}
+
+// Poll for requests
+setInterval(fetchRequests, 5000);
+fetchRequests();

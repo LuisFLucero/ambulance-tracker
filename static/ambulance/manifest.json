@@ -5,16 +5,17 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#dc3545",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "icons/ambulance-192.png",
+      "src": "/static/icons/ambulance-192.png",
       "sizes": "192x192",
-      "type": "aambuweewoo-192.png"
+      "type": "image/png"
     },
     {
-      "src": "icons/ambulance-512.png",
+      "src": "/static/icons/ambulance-512.png",
       "sizes": "512x512",
-      "type": "aambuweewoo-512png"
+      "type": "image/png"
     }
   ]
 }

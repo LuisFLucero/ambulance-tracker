@@ -1,38 +1,18 @@
 {% extends "layout.html" %}
-
 {% block content %}
-<h2>Request an Ambulance</h2>
+<h2>Client Map</h2>
+<div id="map" style="height:400px;"></div>
 
-<!-- Map -->
-<div id="map"></div>
-
-<!-- Emergency request form -->
-<form method="post" action="{{ url_for('client_request') }}" style="margin-top:1rem;">
-  <label for="address">Address:</label><br>
-  <input type="text" id="address" name="address" required><br><br>
-
-  <label for="condition">Patient Condition:</label><br>
-  <textarea id="condition" name="condition" rows="3" required></textarea><br><br>
-
-  <!-- hidden lat/lon fields -->
-  <input type="hidden" name="lat" id="lat">
-  <input type="hidden" name="lon" id="lon">
-
-  <button type="submit">Submit Request</button>
-</form>
-
+<div>
+  <label>Address:</label>
+  <input type="text" id="address" placeholder="Enter address">
+  <label>Condition:</label>
+  <input type="text" id="condition" placeholder="Condition">
+  <button id="emergency-btn">Request Ambulance</button>
+</div>
 <p id="status-message"></p>
-{% endblock %}
 
-{% block scripts %}
-<script>
-  // fill hidden fields with current location
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      document.getElementById('lat').value = pos.coords.latitude;
-      document.getElementById('lon').value = pos.coords.longitude;
-    });
-  }
-</script>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='client/script.js') }}"></script>
+
 {% endblock %}

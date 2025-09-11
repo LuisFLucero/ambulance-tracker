@@ -1,32 +1,22 @@
 {% extends "layout.html" %}
-
 {% block content %}
 <h2>Ambulance Dashboard</h2>
+<div id="map" style="height:400px;"></div>
 
-<div id="map"></div>
-
-<h3 style="margin-top:1rem;">Active Requests</h3>
-<ul>
+<h3>Pending Requests</h3>
+<ul id="requests-list">
   {% for req in requests %}
-    <li>
-      <strong>{{ req.address }}</strong> — {{ req.condition }}
-      {% if req.lat and req.lon %}
-        <button class="route-btn" data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">
-          Show Route
-        </button>
-      {% else %}
-        <em>No coordinates</em>
-      {% endif %}
+    <li data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">
+      Address: {{ req.address }} | Condition: {{ req.condition }}
+      <button class="route-btn" data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">Show Route</button>
     </li>
   {% else %}
-    <li>No active requests</li>
+    <li>No requests yet</li>
   {% endfor %}
 </ul>
-{% endblock %}
 
-{% block scripts %}
-<link rel="stylesheet"
-      href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 <script src="{{ url_for('static', filename='ambulance/script.js') }}"></script>
 {% endblock %}

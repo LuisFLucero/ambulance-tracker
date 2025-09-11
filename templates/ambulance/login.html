@@ -1,10 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>🚑 Ambulance Login</h2>
-<form method="POST">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Login</button>
+<h2>Ambulance Login</h2>
+<form method="post">
+  <label>Username:</label>
+  <input type="text" name="username" required>
+  <label>Password:</label>
+  <input type="password" name="password" required>
+  <button type="submit">Login</button>
 </form>
-<p>Don’t have an account? <a href="{{ url_for('ambulance_register') }}">Register here</a></p>
 {% endblock %}
