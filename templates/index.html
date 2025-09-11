@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERNI Hackathon</title>
-    <h1>Ambulance Tracker</h1>
+  <meta charset="UTF-8">
+  <title>Ambulance Tracker</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="manifest" href="/static/manifest.json">
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 </head>
 <body>
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-         Minus, consequatur. Ad molestias, dolorem architecto exercitationem 
-         eligendi nesciunt pariatur delectus, doloremque commodi qui nam deleniti, 
-         nihil quisquam animi non laudantium deserunt?</p>
-    <h2>Ambulance Tracker</h2>
-    <h1>ERNI Hackathon</h1>
-    <h1>Final TEST</h1>
+  <h2>🚑 Smart Ambulance Tracker</h2>
+
+  <div>
+    <label>Select Role:</label>
+    <select id="role">
+      <option value="client">Client</option>
+      <option value="ambulance">Ambulance</option>
+    </select>
+  </div>
+
+  <div id="map"></div>
+
+  <h3>📢 Dispatch Messages</h3>
+  <ul id="messages"></ul>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
