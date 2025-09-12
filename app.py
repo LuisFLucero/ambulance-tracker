@@ -8,6 +8,7 @@ import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yoursecretkey'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ambulance.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
 db = SQLAlchemy(app)
 
 mimetypes.add_type('application/javascript', '.js')
