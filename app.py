@@ -221,9 +221,4 @@ def favicon():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        if not User.query.filter_by(username='ambulance1').first():
-            db.session.add(User(username='ambulance1', password='1234', role='ambulance'))
-            db.session.commit()
     app.run(debug=True)
