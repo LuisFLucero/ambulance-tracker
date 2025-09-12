@@ -24,7 +24,6 @@ body {
     border-radius: 5px;
     text-decoration: none;
 }
-
 .btn-primary:hover {
     background: #c82333;
 }
@@ -36,7 +35,6 @@ body {
     border-radius: 5px;
     text-decoration: none;
 }
-
 .btn-secondary:hover {
     background: #0056b3;
 }
@@ -45,33 +43,13 @@ body {
     display: none !important;
 }
 
-/* Install button floating top-right */
-.install-button {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.install-button:hover {
-    background-color: #0056b3;
-}
-
-/* Install container bottom center */
-#installContainer {
+/* 🚑 Install Ambulance Button - floating bottom right */
+#installBtnAmbulance {
     position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 20px;
     z-index: 1000;
-}
-#installBtn {
-    background: #007bff;
+    background: #dc3545;
     color: white;
     border: none;
     padding: 12px 24px;
@@ -80,6 +58,6 @@ body {
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-#installBtn:hover {
-    background: #0056b3;
+#installBtnAmbulance:hover {
+    background: #a71d2a;
 }

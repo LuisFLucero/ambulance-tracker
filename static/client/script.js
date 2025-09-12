@@ -1,89 +1,118 @@
-// Initialise map centred in Manila
-const map = L.map("map").setView([14.5995, 120.9842], 13);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+// ================== Client Side ==================
+let map = L.map('map').setView([14.5995, 120.9842], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-// Marker cache for ambulances
-let ambulanceMarkers = {};
+let clientMarker = null;
+let ambulanceMarker = null;
+let routingControl = null;
+let currentRequestId = null;
 
-// Add client marker when they geolocate
-if ("geolocation" in navigator) {
-  navigator.geolocation.getCurrentPosition(pos => {
-    const clientLat = pos.coords.latitude;
-    const clientLon = pos.coords.longitude;
-    L.marker([clientLat, clientLon]).addTo(map).bindPopup("You are here").openPopup();
-  });
-}
+// Request ambulance button
+document.getElementById('emergency-btn').addEventListener('click', async function () {
+  const address = document.getElementById('address').value;
+  const condition = document.getElementById('condition').value;
 
-// Poll ambulance locations from server
-function updateAmbulances() {
-  fetch("/get_locations")
-    .then(res => res.json())
-    .then(data => {
-      // ambulances dictionary: {id: {lat, lon}}
-      Object.entries(data.ambulances).forEach(([id, loc]) => {
-        if (ambulanceMarkers[id]) {
-          ambulanceMarkers[id].setLatLng([loc.lat, loc.lon]);
-        } else {
-          ambulanceMarkers[id] = L.marker([loc.lat, loc.lon], {
-            icon: L.divIcon({
-              className: "ambulance-marker",
-              html: "<div style='color:red;font-weight:bold;'>🚑</div>",
-              iconSize: [20, 20]
-            })
-          }).addTo(map).bindPopup("Ambulance");
-        }
-      });
-    })
-    .catch(err => console.error("Error fetching ambulances:", err));
-}
-
-// Request ambulance button handler
-async function requestAmbulance() {
-  const address = document.getElementById("address").value;
-  const condition = document.getElementById("condition").value;
   if (!address || !condition) {
-    alert("Please enter both address and condition");
+    alert("⚠️ Please enter both address and condition");
     return;
   }
 
-  try {
-    // Geocode address to lat/lon
-    const geoRes = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-    );
-    const geoData = await geoRes.json();
-    if (geoData.length === 0) {
-      alert("Address not found");
-      return;
-    }
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported");
+    return;
+  }
 
-    const lat = parseFloat(geoData[0].lat);
-    const lon = parseFloat(geoData[0].lon);
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
 
-    // send request to server
-    const res = await fetch("/request_ambulance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+    if (clientMarker) map.removeLayer(clientMarker);
+    clientMarker = L.marker([lat, lon]).addTo(map).bindPopup("📍 You").openPopup();
+
+    try {
+      let res = await fetch('/request_ambulance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, condition, lat, lon })
+      });
+      let data = await res.json();
+
+      if (data.request_id) {
+        currentRequestId = data.request_id;
+        document.getElementById("status-message").innerText = "🚑 Ambulance request submitted!";
+      } else {
+        document.getElementById("status-message").innerText = "❌ Failed to submit request";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Request failed");
+    }
+  });
+});
+
+// Poll ambulance location + ETA
+async function pollAmbulance() {
+  if (!currentRequestId) return;
+
+  try {
+    let res = await fetch(`/get_locations?request_id=${currentRequestId}`);
+    let data = await res.json();
+
+    if (data.accepted && data.ambulance) {
+      const ambLat = data.ambulance.lat;
+      const ambLon = data.ambulance.lon;
+
+      // 🚑 Place or update ambulance marker
+      if (!ambulanceMarker) {
+  ambulanceMarker = L.marker([ambLat, ambLon], {
+    icon: L.icon({
+      iconUrl: '/static/ambulance/ambulance.ico',  // ✅ local ambulance icon
+      iconSize: [40, 40],  // adjust size if needed
+      iconAnchor: [20, 40], // base of the icon sits on location
+      popupAnchor: [0, -40]
+    })
+  }).addTo(map).bindPopup("🚑 Ambulance");
+} else {
+  ambulanceMarker.setLatLng([ambLat, ambLon]);
+}
+
+
+      // 🗺️ Draw route + calculate ETA
+      if (clientMarker) {
+        if (routingControl) map.removeControl(routingControl);
+
+        routingControl = L.Routing.control({
+          waypoints: [
+            L.latLng(ambLat, ambLon),
+            clientMarker.getLatLng()
+          ],
+          routeWhileDragging: false,
+          addWaypoints: false,
+          draggableWaypoints: false,
+          fitSelectedRoutes: true
         });
 
+        // Attach before adding
+        routingControl.on('routesfound', function (e) {
+          if (e.routes && e.routes.length > 0) {
+            let route = e.routes[0];
+            let etaMins = Math.round(route.summary.totalTime / 60);
+            document.getElementById('eta').innerText = `⏱ ETA: ${etaMins} minutes`;
+          }
+        });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`HTTP ${res.status}: ${text}`);
+        routingControl.addTo(map);
+      }
+
+    } else {
+      // Before ambulance accepts
+      document.getElementById('eta').innerText = "⏱ Waiting for ambulance...";
     }
-    const data = await res.json();
-    document.getElementById("status-message").textContent = data.message;
   } catch (err) {
-    console.error(err);
-    alert("Error requesting ambulance");
+    console.error("Poll error:", err);
   }
 }
 
-document.getElementById("emergency-btn")?.addEventListener("click", requestAmbulance);
-
-// Poll ambulances every 5 seconds
-setInterval(updateAmbulances, 5000);
-updateAmbulances();
+setInterval(pollAmbulance, 5000);

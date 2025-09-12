@@ -1,19 +1,41 @@
 {% extends "layout.html" %}
 {% block content %}
 <h2>Ambulance Dashboard</h2>
+
 <div id="map" style="height:400px;"></div>
 
 <h3>Pending Requests</h3>
 <ul id="requests-list">
   {% for req in requests %}
-    <li data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">
+    <li data-id="{{ req.id }}" data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">
       Address: {{ req.address }} | Condition: {{ req.condition }}
-      <button class="route-btn" data-lat="{{ req.lat }}" data-lon="{{ req.lon }}">Show Route</button>
+      <button class="accept-btn">Accept</button>
+      <button class="finish-btn">Finish</button>
     </li>
   {% else %}
     <li>No requests yet</li>
   {% endfor %}
 </ul>
+
+<button id="installBtnAmbulance" style="display:none;">🚑 Install Ambulance App</button>
+<link rel="manifest" href="/static/ambulance/manifest.json">
+
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/ambulance/sw.js")
+      .then(reg => console.log("Ambulance SW registered", reg))
+      .catch(err => console.error("Ambulance SW failed", err));
+}
+</script>
+
+
+
+
+<!-- In ambulance.html -->
+<button id="installBtnAmbulance" style="display: none;">Install Ambulance</button>
+
+  
+
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>

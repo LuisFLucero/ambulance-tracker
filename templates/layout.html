@@ -1,37 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Ambulance Tracker</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='client/style.css') }}">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-  {% if "ambulance" in request.path %}
+  {# ✅ Load correct manifest depending on route #}
+  {% if request.path.startswith('/ambulance') %}
     <link rel="manifest" href="{{ url_for('static', filename='ambulance/manifest.json') }}">
-    <meta name="theme-color" content="#dc3545">
   {% else %}
     <link rel="manifest" href="{{ url_for('static', filename='client/manifest.json') }}">
-    <meta name="theme-color" content="#007bff">
   {% endif %}
 </head>
 <body>
 <header>
   <h1>🚑 Ambulance Tracker</h1>
   {% if current_user.is_authenticated %}
-    <a href="{{ url_for('logout') }}">Logout</a>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
   {% endif %}
 </header>
+
 <main>
   {% block content %}{% endblock %}
 </main>
 
-<script>
-  if ("serviceWorker" in navigator) {
-    const sw = window.location.pathname.startsWith("/ambulance")
-      ? "/static/ambulance/sw.js"
-      : "/static/client/sw.js";
+{# ✅ Install buttons (hidden by default, shown via JS) #}
+<button id="installBtnClient" style="display:none;">📲 Install Client App</button>
+<button id="installBtnAmbulance" style="display:none;">🚑 Install Ambulance App</button>
 
-    navigator.serviceWorker.register(sw)
-      .then(reg => console.log("Service Worker registered:", reg))
-      .catch(err => console.error("SW registration failed:", err));
+<script>
+let deferredPrompt;
+
+// ✅ Check if app is already installed
+function checkIfInstalled() {
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log("✅ App is already installed (standalone mode)");
+    hideInstallButtons();
+    return true;
   }
+
+  if ('getInstalledRelatedApps' in navigator) {
+    navigator.getInstalledRelatedApps().then((apps) => {
+      if (apps.length > 0) {
+        console.log("✅ App already installed (via getInstalledRelatedApps)");
+        hideInstallButtons();
+        return true;
+      }
+    });
+  }
+
+  return false;
+}
+
+function hideInstallButtons() {
+  const btnAmbulance = document.getElementById("installBtnAmbulance");
+  const btnClient = document.getElementById("installBtnClient");
+  if (btnAmbulance) btnAmbulance.style.display = "none";
+  if (btnClient) btnClient.style.display = "none";
+}
+
+// ✅ Capture the beforeinstallprompt event
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  console.log("📲 beforeinstallprompt fired");
+
+  if (window.location.pathname.startsWith("/ambulance")) {
+    document.getElementById("installBtnAmbulance").style.display = "block";
+  } else if (window.location.pathname.startsWith("/client")) {
+    document.getElementById("installBtnClient").style.display = "block";
+  }
+});
+
+// ✅ Handle Client install
+document.getElementById("installBtnClient")?.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log("Client install outcome:", outcome);
+  deferredPrompt = null;
+  hideInstallButtons();
+});
+
+// ✅ Handle Ambulance install
+document.getElementById("installBtnAmbulance")?.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log("Ambulance install outcome:", outcome);
+  deferredPrompt = null;
+  hideInstallButtons();
+});
+
+// ✅ Register correct service worker
+if ("serviceWorker" in navigator) {
+  if (window.location.pathname.startsWith("/ambulance")) {
+    navigator.serviceWorker.register("/ambulance/sw.js");
+  } else if (window.location.pathname.startsWith("/client")) {
+    navigator.serviceWorker.register("/client/sw.js");
+  }
+}
+
+// Run check on load
+window.addEventListener("load", checkIfInstalled);
 </script>
+
+
+<button id="installAmbulanceBtn" style="display:none;">Install Ambulance App</button>
+<button id="installClientBtn" style="display:none;">Install Client App</button>
+
+
+<script>
+let ambulancePrompt, clientPrompt;
+
+// Ambulance
+window.addEventListener("beforeinstallprompt", (e) => {
+    if (window.location.pathname.includes("ambulance")) {
+        e.preventDefault();
+        ambulancePrompt = e;
+        document.getElementById("installAmbulanceBtn").classList.remove("hidden");
+    }
+});
+
+// Client
+window.addEventListener("beforeinstallprompt", (e) => {
+    if (window.location.pathname.includes("client")) {
+        e.preventDefault();
+        clientPrompt = e;
+        document.getElementById("installClientBtn").classList.remove("hidden");
+    }
+});
+
+// Click handlers
+document.getElementById("installAmbulanceBtn").addEventListener("click", () => {
+    if (ambulancePrompt) {
+        ambulancePrompt.prompt();
+        ambulancePrompt.userChoice.then(res => {
+            console.log("Ambulance install outcome:", res.outcome);
+            ambulancePrompt = null;
+            document.getElementById("installAmbulanceBtn").classList.add("hidden");
+        });
+    }
+});
+
+document.getElementById("installClientBtn").addEventListener("click", () => {
+    if (clientPrompt) {
+        clientPrompt.prompt();
+        clientPrompt.userChoice.then(res => {
+            console.log("Client install outcome:", res.outcome);
+            clientPrompt = null;
+            document.getElementById("installClientBtn").classList.add("hidden");
+        });
+    }
+});
+</script>
+
 </body>
+</html>

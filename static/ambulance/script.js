@@ -1,45 +1,27 @@
-// Initialise map centred in Manila for now
-let currentAmbLat = 14.5995;
-let currentAmbLon = 120.9842;
+// ================== Ambulance Side ==================
+
+// Dummy PGH coords
+let currentAmbLat = 14.578056;
+let currentAmbLon = 120.985556;
 
 const map = L.map('map').setView([currentAmbLat, currentAmbLon], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-// Marker for ambulance
+// Marker for ambulance (always PGH)
 const ambulanceMarker = L.marker([currentAmbLat, currentAmbLon])
   .addTo(map)
-  .bindPopup('Ambulance location')
+  .bindPopup('🚑 Ambulance (PGH)')
   .openPopup();
 
-let routingControl = null;      // to hold the route control
-let currentRouteTarget = null;  // store the current client lat/lon
+let routingControl = null;      
+let currentRouteTarget = null;  
+let activeRequestId = null;     
 
-// Watch ambulance device GPS
-if ('geolocation' in navigator) {
-  navigator.geolocation.watchPosition(pos => {
-    currentAmbLat = pos.coords.latitude;
-    currentAmbLon = pos.coords.longitude;
-
-    // update marker position
-    ambulanceMarker.setLatLng([currentAmbLat, currentAmbLon]);
-
-    // if a route is currently displayed, re-draw with new ambulance position
-    if (currentRouteTarget) {
-      showRoute(currentRouteTarget.lat, currentRouteTarget.lon);
-    }
-
-    // (optional) send location to server if logged in as ambulance
-    fetch('/location_update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lat: currentAmbLat, lon: currentAmbLon })
-    }).catch(err => console.error('Location update failed', err));
-  },
-  err => console.error('GPS error', err),
-  { enableHighAccuracy: true });
-}
+// ❌ REMOVE geolocation.watchPosition
+// ✅ Instead, keep ambulance fixed at PGH
+// (If later you want real GPS, re-enable the code)
 
 // Fetch client requests list
 function fetchRequests() {
@@ -49,29 +31,55 @@ function fetchRequests() {
       const list = document.getElementById('requests-list');
       list.innerHTML = '';
       data.forEach(req => {
+        if (req.finished) return; // skip finished requests
+
         const li = document.createElement('li');
         li.textContent = `Address: ${req.address} | Condition: ${req.condition} `;
-        const btn = document.createElement('button');
-        btn.textContent = 'Show Route';
-        btn.addEventListener('click', () => {
+
+        const acceptBtn = document.createElement('button');
+        acceptBtn.textContent = 'Accept';
+        acceptBtn.addEventListener('click', () => {
+          activeRequestId = req.id;
           showRoute(req.lat, req.lon);
+          fetch(`/accept_request/${req.id}`, { method: 'POST' })
+            .then(() => console.log("✅ Request accepted"))
+            .catch(err => console.error("Accept failed", err));
         });
-        li.appendChild(btn);
+
+        const finishBtn = document.createElement('button');
+        finishBtn.textContent = 'Finish';
+        finishBtn.addEventListener('click', () => {
+          if (!activeRequestId) return;
+          fetch(`/finish_request/${activeRequestId}`, { method: 'POST' })
+            .then(() => {
+              li.remove();
+              activeRequestId = null;
+              if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+              }
+              alert('Request finished ✅');
+            })
+            .catch(err => console.error('Failed to finish request', err));
+        });
+
+        li.appendChild(acceptBtn);
+        li.appendChild(finishBtn);
         list.appendChild(li);
       });
     });
 }
 
-// Draw route from current ambulance location to client location
+// Draw route PGH → client
 function showRoute(lat, lon) {
-  currentRouteTarget = { lat, lon }; // remember the target
+  currentRouteTarget = { lat, lon };
 
   if (routingControl) {
     map.removeControl(routingControl);
   }
   routingControl = L.Routing.control({
     waypoints: [
-      L.latLng(currentAmbLat, currentAmbLon),
+      L.latLng(currentAmbLat, currentAmbLon), // Always PGH
       L.latLng(lat, lon)
     ],
     routeWhileDragging: false

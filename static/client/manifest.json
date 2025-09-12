@@ -1,11 +1,10 @@
 {
-  "name": "Emergency Client App",
-  "short_name": "ClientApp",
+  "name": "Emergency Ambulance Client",
+  "short_name": "AmbulanceClient",
   "start_url": "/client",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#007bff",
-  "orientation": "portrait",
+  "theme_color": "#1976d2",
   "icons": [
     {
       "src": "/static/icons/client-192.png",
@@ -17,5 +16,6 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "form_factor": "wide"
 }

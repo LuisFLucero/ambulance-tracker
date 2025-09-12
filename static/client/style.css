@@ -31,7 +31,6 @@ body {
     border-radius: 5px;
     text-decoration: none;
 }
-
 .btn-primary:hover {
     background: #c82333;
 }
@@ -43,7 +42,6 @@ body {
     border-radius: 5px;
     text-decoration: none;
 }
-
 .btn-secondary:hover {
     background: #0056b3;
 }
@@ -107,4 +105,53 @@ body {
     padding: 1rem;
     background: #fff;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* --- Install App Buttons --- */
+#installBtnClient {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 10px;
+}
+#installBtnClient:hover {
+    background: #0056b3;
+}
+
+#installBtnAmbulance {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 10px;
+}
+#installBtnAmbulance:hover {
+    background: #a71d2a;
+}
+
+/* 👤 Install Client Button - floating bottom right */
+#installBtnClient {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+#installBtnClient:hover {
+    background: #0056b3;
+}

@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
 <h2>Client Map</h2>
 <div id="map" style="height:400px;"></div>
 
@@ -8,11 +10,37 @@
   <input type="text" id="address" placeholder="Enter address">
   <label>Condition:</label>
   <input type="text" id="condition" placeholder="Condition">
-  <button id="emergency-btn">Request Ambulance</button>
+  <button id="emergency-btn">🚨 Request Ambulance</button>
 </div>
+
 <p id="status-message"></p>
+<p id="eta" style="font-weight:bold; color:green;">⏱ Waiting for ambulance...</p>
 
+<!-- Install button -->
+<button id="installBtnClient" style="display:none;">📲 Install Client App</button>
+<link rel="manifest" href="/static/client/manifest.json">
+
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/client/sw.js")
+      .then(reg => console.log("Client SW registered", reg))
+      .catch(err => console.error("Client SW failed", err));
+}
+
+document.getElementById("installBtnClient").addEventListener("click", async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log("User response:", outcome);
+    deferredPrompt = null;
+  }
+});
+</script>
+
+<!-- Load Leaflet first -->
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<script src="{{ url_for('static', filename='client/script.js') }}"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
+<!-- Then load your script -->
+<script src="{{ url_for('static', filename='client/script.js') }}"></script>
 {% endblock %}
