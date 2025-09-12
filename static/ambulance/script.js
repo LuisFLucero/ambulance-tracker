@@ -1,4 +1,4 @@
-// ================== Ambulance Side ==================
+
 
 // Dummy PGH coords
 let currentAmbLat = 14.578056;
