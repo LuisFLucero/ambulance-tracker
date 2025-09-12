@@ -19,10 +19,6 @@ let routingControl = null;
 let currentRouteTarget = null;  
 let activeRequestId = null;     
 
-// ❌ REMOVE geolocation.watchPosition
-// ✅ Instead, keep ambulance fixed at PGH
-// (If later you want real GPS, re-enable the code)
-
 // Fetch client requests list
 function fetchRequests() {
   fetch('/api/requests')
@@ -70,7 +66,7 @@ function fetchRequests() {
     });
 }
 
-// Draw route PGH → client
+//  route PGH → client
 function showRoute(lat, lon) {
   currentRouteTarget = { lat, lon };
 
